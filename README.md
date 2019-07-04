@@ -1,37 +1,65 @@
-## Welcome to GitHub Pages
+# _Airspace_ for Jekyll
+![screenshot](screenshots/home.png "Description goes here")
 
-You can use the [editor on GitHub](https://github.com/KennethChewx/kennethchewx.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This Jekyll theme is a port of ThemeFisher's Airspace template. It is released under ThemeFisher's free license, which requires attribution.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Usage
+To start your project, [fork this respository](https://github.com/ndrewtl/airspace-jekyll/fork), put in your content, and go!
 
-### Markdown
+## Examples
+Here are some projects that have used this Jekyll Theme:
+* [BOYUAN Open Source 博辕开源](https://boyuanitsm.github.io)
+* [Campus VC](https://mrchildneo.github.io/mrchildneo/)
+* [Mãos de amar](https://www.maosdeamar.com.br/)
+* [ATK Team](http://www.atksec.com/)
+* [Coding Club](https://ourcodingclub.github.io/)
+* [Dev Empathy Book Club](http://www.devempathybook.club/)
+* [DKAN Open Data Catalog](http://getdkan.com) (modified version of this theme)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Steps for Setup:
 
-```markdown
-Syntax highlighted code block
+### Make sure you have Ruby
 
-# Header 1
-## Header 2
-### Header 3
+First, make sure you have [Ruby](https://www.ruby-lang.org/en/) installed. You can confirm this by running `ruby -v` on the command line:
 
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```sh
+$ ruby -v
+ruby [version number] (date) [your platform]
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+If you get something like `"Error, command not found"` visit the link above and
+install Ruby for your platform.
 
-### Jekyll Themes
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/KennethChewx/kennethchewx.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+### Make sure you have Bundler
 
-### Support or Contact
+Next, make sure you have [Bundler](https://bundler.io) installed. Just like
+above, run `bundle -v` on the command line:
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+```sh
+$ bundle -v
+bundle [version number]
+```
+
+If you get `"Error, command not found"` run `gem install bundler` to install it
+using RubyGems.
+
+### Run this repository
+
+Clone the repository, and `cd` into it:
+```sh
+$ git clone https://github.com/ndrewtl/airspace-jekyll.git
+$ cd airspace-jekyll
+```
+
+Install dependencies locally:
+```sh
+$ bundle install --path vendor/bundle
+```
+
+This should install a local copy of jekyll.
+
+Now run the server:
+```sh
+$ ./vendor/bundle/ruby/#{YOUR_RUBY_VERSION}/bin/jekyll server
+```
