@@ -2,10 +2,8 @@
 layout: post
 title: "Learning to color pictures with DcGANs - Capstone for Data Science Immersive Course"
 ---
-
-<To include a picture here>
     
-##My introduction in Computer Vision (h2)
+## My introduction in Computer Vision (h2)
 ----
     
 Hi everyone, this is going to be my first post ever, and I would just like to say that although I did not start out doing data science-ish posts with your usual basic machine learning stuff like iris dataset, titanic etc, I am still very much a beginner in this field. Still, I'm almost 3/4 done with my data science immersive course at General Assembly in Singapore and would love to contribute what I have learnt thus far about ML and deep learning.
@@ -43,13 +41,13 @@ In addition, there were other image preprocessings that I did to the input image
 </p>
 `As per skimage's documentation`
     
-###Histogram Equalization  (h3)
+### Histogram Equalization  (h3)
 Histogram Equalization increases contrast in images by detecting the distribution of pixel densities in an image and plotting these pixel densities on a histogram. The distribution of this histogram is then analyzed and if there are ranges of pixel brightnesses that aren’t currently being utilized, the histogram is then “stretched” to cover those ranges, and then is “back projected” onto the image to increase the overall contrast of the image.
 
-###Contrast Stretching (h3)
+### Contrast Stretching (h3)
 Contrast Stretching takes the approach of analyzing the distribution of pixel densities in an image and then “rescales the image to include all intensities that fall within the 2nd and 98th percentiles.”
 
-###Adaptive Equalization (h3)
+### Adaptive Equalization (h3)
 Adaptive Equalization differs from regular histogram equalization in that several different histograms are computed, each corresponding to a different section of the image; however, it tends to over-amplify noise in otherwise uninteresting sections.
 
 Lastly for preprocessing, to reduce the time taken for the model to learn those important features when passing through the convolution layers into that latent variable space, I [normalized][normalized] the LAB values to according to their color space. I divided the channels in LAB by [100, 128 and 128] respectively. This is done so that the gradients can be adjusted quicker during back propagation. By making the range to relatively the same, we ensure that the gradient descent can converge much faster.
