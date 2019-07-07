@@ -22,7 +22,7 @@ I was greatly intrigued with the use of neural networks in computers, as the top
 To start off, I would first have to get a large dataset of colored pictures that can be used to put my model into training. After searching, I found the dataset from a FloydHub user `emilwallner` who shared his dataset of 9,294 images that was collected from unsplash. These pictures were all very high in quality and were all standardized in size with 256x256. Thinking about the minor requirement that the capstone project had (which was to at least have 1,500 rows of data), I was thrilled about using this dataset. 
 
 <p align="center">
-  <img src="https://cdn-media-1.freecodecamp.org/images/K3OU3lMzzks0UI-MGAap-fmYCuVhpjHKvTzQ">    
+  <img src="https://cdn-media-1.freecodecamp.org/images/K3OU3lMzzks0UI-MGAap-fmYCuVhpjHKvTzQ" style="width:128px;height:128px;">    
 </p>
 *Image taken from unsplash from emilwallner dataset*
     
