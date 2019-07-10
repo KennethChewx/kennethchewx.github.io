@@ -10,11 +10,10 @@ Hi everyone, this is going to be my first post ever, and I would just like to sa
     
 I was greatly intrigued with the use of neural networks in computers, as the topic of neural networks greatly aligned with the field of cognitive neuroscience during my undergraduate time. Of course, this led me to my interest in the field computer vision within data science. For starters, I wanted to try and color gray pictures with deep learning! This was an interesting topic to myself because I am a light novel and comic reader myself. Having colored images and colored comics are always a plus point to making reading much enjoyable. Plus, colors give amazing perspective to readers too.
 
+<div style="font-size:80%; text-align:center;">
+  <img src="http://www.onepiecepodcast.com/wp-content/uploads/2018/01/color-810x466.png" style="width:610px;height:610px;padding-bottom:0.5em;">*One piece manga full colored page*   
+</div>
 
-<p align="center">
-  <img src="http://www.onepiecepodcast.com/wp-content/uploads/2018/01/color-810x466.png">    
-</p>
-*One piece manga full colored page*
     
 ## Data collection and data processing
 ----
@@ -31,14 +30,14 @@ To make things easier, emilwallner also did a similar project and had a nice int
 So I started off my coding by emulating what was already out there in the internet. Suffice to say, those less than 100 line of neural network was a great starting point for me to build my own neural network. I learnt how to decode and load images into numpy arrays, learnt how that input shapes are important and that batch sizes entering the model had to be optimized to ensure that my computer memory doesn’t run out. Most importantly, I learnt that we could break down my colorization problem into something else, which was to turn it into a conversion from RGB color space to LAB color space. This greatly coincided with my knowledge too that in normal human vision, our optical nerves in our eyes are mostly connected to rods which is used to detect high spatial acuity, while cones which provide the color perception are much lesser in numbers. Furthermore, to closely mimic the human eye, images that hit the retina are actually inverted. So, included within the step of preprocessing, one of the conditions was to randomly flip images upside down, so that the model can also learn better.
 
 <p align="center">
-  <img src="https://qph.fs.quoracdn.net/main-qimg-f543dfb3879656e214d40d16a5b6ff17">    
+  <img src="https://qph.fs.quoracdn.net/main-qimg-f543dfb3879656e214d40d16a5b6ff17" style="width:610px;height:610px;">    
 </p>
 *Objects viewed are inverted on the retina*
     
 In addition, there were other image preprocessings that I did to the input images. This came easy with keras' `ImageDataGenerator`, where I could easily create unlimited number of datapoints/images from the same input based on certain parameters that is passed in the [data generator][data generator]. One of the more interesting augmentation was the [histogram stretching][histogram stretching] method. This method would allow one to bring out the contrast of the image by plotting the density of contrast on a histogram. Thus, pixels which does not conform to a particular density within the area will be adjusted accordingly. This becomes especially useful for my input images since it is largely grayscale. The contrast would help the models learn those features better. To implement this function together with the ImageDataGenerator, I simply used skimage's exposure library to randomly apply one of three augmentations that could be done: Adaptive equalization, contrast stretching and histogram equalization. This could be passed through a random number generator and as a function in the *preprocessing_function* parameter.
 
 <p align="center">
-  <img src="https://scikit-image.org/docs/0.13.x/_images/sphx_glr_plot_equalize_001.png">   
+  <img src="https://scikit-image.org/docs/0.13.x/_images/sphx_glr_plot_equalize_001.png" style="width:610px;height:610px;">   
 </p>
 *As per skimage's documentation*
     
@@ -75,46 +74,49 @@ Also, there were ideas before the above architecture, as pursued by Satoshi and 
 Judging from empirical evidence in their papers that both neural networks seems to work pretty well, I decided to give it a try and incorporate something similar to their works.
 
 {% highlight ruby %}
-model = Sequential()
-    
-#Downsampling batch
-model.add(InputLayer(input_shape=(256, 256, 1)))
-model.add(Conv2D(64, (3, 3),activation='relu', padding='same'))                     
-model.add(BatchNormalization())                                               #(bs,256, 256,64)
-model.add(Conv2D(64, (3, 3), activation='relu',padding='same', strides=2))            
-model.add(BatchNormalization())                                               #(bs,128,128,64)
-model.add(Conv2D(128, (3, 3), activation='relu',padding='same'))                     
-model.add(BatchNormalization())                                                #(bs,128,128,128)
-model.add(Conv2D(128, (3, 3), activation='relu',padding='same', strides=2))          
-model.add(BatchNormalization())                                                   #(bs,64,64,128)
-model.add(Conv2D(256, (3, 3), activation='relu',padding='same'))                     
-model.add(BatchNormalization())                                                 #(bs,64,64,256)
-model.add(Conv2D(256, (3, 3), activation='relu',padding='same', strides=2))            
-model.add(BatchNormalization())                                                    #(bs,32,32,256)
-model.add(Conv2D(512, (3, 3), activation='relu',padding='same'))                     
-model.add(BatchNormalization())                                                   #(bs,32,32,512)
+#Shared models
+encoder_input = Input(shape=(256, 256, 1,))
+encoder_output = Conv2D(64, (3,3), activation='relu', padding='same', strides=2)(encoder_input)
+encoder_output = Conv2D(128, (3,3), activation='relu', padding='same')(encoder_output)
+encoder_output = BatchNormalization()(encoder_output)
+encoder_output = Conv2D(128, (3,3), activation='relu', padding='same', strides=2)(encoder_output)
+encoder_output = Conv2D(256, (3,3), activation='relu', padding='same')(encoder_output)
+encoder_output = BatchNormalization()(encoder_output)
+encoder_output = Conv2D(256, (3,3), activation='relu', padding='same', strides=2)(encoder_output)
+encoder_output_shared = Conv2D(512, (3,3), activation='relu', padding='same')(encoder_output)
 
-#Upsampling batch
-model.add(Conv2D(512, (3, 3), activation='relu', padding='same'))        
-model.add(BatchNormalization())
-model.add(Dropout(0.5))                                                       #(bs,32,32,512)
-model.add(Conv2D(256, (3, 3), activation='relu', padding='same'))     
-model.add(BatchNormalization())
-model.add(Dropout(0.5))                                                       #(bs,32,32,256)
-model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))        
-model.add(BatchNormalization())
-model.add(Dropout(0.5))                                                       #(bs,32,32,128)
-model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))        
-model.add(BatchNormalization()) 
-model.add(UpSampling2D((2, 2)))                                               #(bs,64,64,64)
-model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))        
-model.add(BatchNormalization())
-model.add(UpSampling2D((2, 2)))                                               #(bs,128,128,32)
-model.add(Conv2D(2, (3, 3), activation='tanh', padding='same'))         
-model.add(UpSampling2D((2, 2)))                                               #(bs,256,256,2)
+#Model A
+encoder_output = Conv2D(512, (3,3), activation='relu', padding='same')(encoder_output_shared)
+encoder_output = Conv2D(256, (3,3), activation='relu', padding='same')(encoder_output)
+#Model B
+global_encoder = Conv2D(512, (3,3), activation='relu', padding='same',strides=2)(encoder_output_shared)
+global_encoder = Conv2D(512, (3,3), activation='relu', padding='same')(global_encoder)
+global_encoder = BatchNormalization()(global_encoder)
+global_encoder = Conv2D(512, (3,3), activation='relu', padding='same',strides=2)(global_encoder)
+global_encoder = Conv2D(512, (3,3), activation='relu', padding='same')(global_encoder)
+global_encoder = BatchNormalization()(global_encoder)
+global_encoder = Flatten()(global_encoder)
+global_encoder = Dense(1024, activation='relu')(global_encoder)
+global_encoder = Dense(512, activation='relu')(global_encoder)
+global_encoder = Dense(256, activation='relu')(global_encoder)
+global_encoder = RepeatVector(32 * 32)(global_encoder)
+global_encoder = Reshape([32,32,256])(global_encoder)
+#Fusion 
+fusion_output = concatenate([encoder_output, global_encoder], axis=3) 
+fusion_output = Conv2D(256, (1, 1), activation='relu', padding='same')(fusion_output)
+#Decoder
+decoder_output = Conv2D(128, (3,3), activation='relu', padding='same')(fusion_output)
+decoder_output = UpSampling2D((2, 2))(decoder_output)
+decoder_output = Conv2D(64, (3,3), activation='relu', padding='same')(decoder_output)
+decoder_output = UpSampling2D((2, 2))(decoder_output)
+decoder_output = Conv2D(32, (3,3), activation='relu', padding='same')(decoder_output)
+decoder_output = Conv2D(16, (3,3), activation='relu', padding='same')(decoder_output)
+decoder_output = Conv2D(2, (3, 3), activation='tanh', padding='same')(decoder_output)
+decoder_output = UpSampling2D((2, 2))(decoder_output)
 
-#Finish model
-model.compile(optimizer='rmsprop', loss=ssim_loss ,metrics=['mse','mean_absolute_error'])
+model = Model(inputs=encoder_input, outputs=decoder_output)
+# Finish model
+model.compile(optimizer='adam',loss=ssim_loss ,metrics=['mse','mean_absolute_error'])
 {% endhighlight %}
     
 Included in this model, I have used Relu activation function for the hidden layers and tanh for the last layer. The use of the tanh is because the output layer which are the ab channels have normalized range between -1 and 1, which coincide with the output of tanh. As for the loss function, I used multi-scale SSIM because as feedbacked from my previous experiments, brown is the most closest color to every oher color in the spectrum. Thus, the output using MSE as loss function turns out to be largely brown. On the other hand, [SSIM][SSIM] helps measure the the picture's similarity as a whole between channels from the target and the generated output. 
@@ -125,7 +127,7 @@ Included in this model, I have used Relu activation function for the hidden laye
 
 ## Results 
     
-Unfortunately, after training the above model on 1000 epochs, the output did not turn out well. In retrospect, I overdid on the batch normalization. However, this gave me a reason to pursue other forms of models for my coloring problem and thus I encountered DcGANs.
+Unfortunately, after training the above model on 500 epochs, the output did not turn out well with colors like green or blue overtaking the whole picture. In retrospect, even with Colored-Multiscale SSIM, the output turned out to be more grainy than usual. However, this gave me a reason to pursue other forms of models for my coloring problem and thus I encountered DcGANs.
     
 ## Deep Convolutional Generative Adversarial Network (DcGAN) 
 ----
@@ -140,9 +142,16 @@ With the incorporation of both convolutional layers and GANs, we get [DcGANs][Dc
     
 Two versions of a similar DcGANs (aka Pix2Pix) were available for use in in my case. The original created by Phillip Isola, but was written with PyTorch, and the latter by afflinelayer, written with Tensorflow. I chose to emulate the latter becauseof the tensorflow compatibility. 
     
-In addition, because of the *unavoidable problem of long training time* for deep learning models, I had to inevitably cut down my sample size from 9.2k images to 2.2k images. Hopefully, I would still be able to reach my goal of submission of my capstone before graduation from the course. Furthermore, because most of the pictures fall into either of 3 categories of Landscape, People and Objects, I have chose to also only pick 2.2k (2k in training set and 200 in test) images of people only, so that the model would perform better for predicting colors of grayscale people images. Below are the codes that I have fine-tuned for my capstone project.
+In addition, because of the *unavoidable problem of long training time* for deep learning models, I had to inevitably cut down my sample size from 9.2k images to 2.2k images. Hopefully, I would still be able to reach my goal of submission of my capstone before graduation from the course. Furthermore, because most of the pictures fall into either of 3 categories of Landscape, People and Objects, I chose to also only pick 2.2k (2k in training set and 200 in test) images of people only, so that the model would perform better for predicting colors of grayscale people images. 
 
-I trained the model on 1500 epochs on Google Colab GPU, with an average runtime of 200s per epoch, and training it for a total of 4 days.
+After looking at the literature for neural architectures, I've picked U-net as the neural network that I will aim towards building. This could be said to be a large improvement to the shared model CNN from previous experiments I have tried out. There are a few advantages to using U-net with my current predicament. Firstly, to understand how this architecture is unique, U-net implement skips between convolution and transpose convolution. This is possible because the shape of the output when encoding/convoluting and the shape of the input when deconvoluting/decoding  are exactly the same. This allows us to concatenate the vectores together and while extracting the feature spaces during convolution, it also preserves the initial pixel acuity.
+Below are the codes that I have fine-tuned for my capstone project.
+
+<p align="center">
+  <img src="https://cdn-images-1.medium.com/max/1600/1*J3t2b65ufsl1x6caf6GiBA.png">    
+</p>  
+
+I trained the model on 200 epochs on Google Colab GPU, with an average runtime of 240s per epoch, and training it for a total of 2 days.
     
 {% highlight ruby %}
     
