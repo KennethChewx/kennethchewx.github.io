@@ -5,41 +5,38 @@ title: "Learning to color pictures with DcGANs - Capstone for Data Science Immer
     
 ## My introduction in Computer Vision
 ----
-    
+ 
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="http://www.onepiecepodcast.com/wp-content/uploads/2018/01/color-810x466.png" alt="One piece manga full colored page" width="810" height="610" style="padding-bottom:0.5em;" />*One piece manga full colored page*
+</div>
+ 
 Hi everyone, this is going to be my first post ever, and I would just like to say that although I did not start out doing data science-ish posts with your usual basic machine learning stuff like iris dataset, titanic etc, I am still very much a beginner in this field. Still, I'm almost 3/4 done with my data science immersive course at General Assembly in Singapore and would love to contribute what I have learnt thus far about ML and deep learning.
     
 I was greatly intrigued with the use of neural networks in computers, as the topic of neural networks greatly aligned with the field of cognitive neuroscience during my undergraduate time. Of course, this led me to my interest in the field computer vision within data science. For starters, I wanted to try and color gray pictures with deep learning! This was an interesting topic to myself because I am a light novel and comic reader myself. Having colored images and colored comics are always a plus point to making reading much enjoyable. Plus, colors give amazing perspective to readers too.
-
-<div style="width:image width px; font-size:80%; text-align:center;">
-    <img src="http://www.onepiecepodcast.com/wp-content/uploads/2018/01/color-810x466.png" alt="*One piece manga full colored page*" width="810" height="610" style="padding-bottom:0.5em;" />*One piece manga full colored page*
-</div>
     
 ## Data collection and data processing
 ----
-        
-To start off, I would first have to get a large dataset of colored pictures that can be used to put my model into training. After searching, I found the dataset from a FloydHub user `emilwallner` who shared his dataset of 9,294 images that was collected from unsplash. These pictures were all very high in quality and were all standardized in size with 256x256. Thinking about the minor requirement that the capstone project had (which was to at least have 1,500 rows of data), I was thrilled about using this dataset. 
 
-<p align="center">
-  <img src="https://cdn-media-1.freecodecamp.org/images/K3OU3lMzzks0UI-MGAap-fmYCuVhpjHKvTzQ" style="width:610px;height:810px;">    
-</p>
-*Image taken from unsplash from emilwallner dataset*
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://cdn-media-1.freecodecamp.org/images/K3OU3lMzzks0UI-MGAap-fmYCuVhpjHKvTzQ" alt="Image taken from unsplash from emilwallner dataset" width="610" height="810" style="padding-bottom:0.5em;" />*Image taken from unsplash from emilwallner dataset*
+</div>
+
+To start off, I would first have to get a large dataset of colored pictures that can be used to put my model into training. After searching, I found the dataset from a FloydHub user `emilwallner` who shared his dataset of 9,294 images that was collected from unsplash. These pictures were all very high in quality and were all standardized in size with 256x256. Thinking about the minor requirement that the capstone project had (which was to at least have 1,500 rows of data), I was thrilled about using this dataset. 
     
 To make things easier, emilwallner also did a similar project and had a nice introduction into coloring pictures using CNN with less than 100 lines of codes! For more information, you could click [here][emil]. Already, this medium post gives a great introduction into neural networks and also explanations code by code what each line does. So if you are not already familiar with it, you could drop there to take a look. 
     
 So I started off my coding by emulating what was already out there in the internet. Suffice to say, those less than 100 line of neural network was a great starting point for me to build my own neural network. I learnt how to decode and load images into numpy arrays, learnt how that input shapes are important and that batch sizes entering the model had to be optimized to ensure that my computer memory doesn’t run out. Most importantly, I learnt that we could break down my colorization problem into something else, which was to turn it into a conversion from RGB color space to LAB color space. This greatly coincided with my knowledge too that in normal human vision, our optical nerves in our eyes are mostly connected to rods which is used to detect high spatial acuity, while cones which provide the color perception are much lesser in numbers. Furthermore, to closely mimic the human eye, images that hit the retina are actually inverted. So, included within the step of preprocessing, one of the conditions was to randomly flip images upside down, so that the model can also learn better.
 
-<p align="center">
-  <img src="https://qph.fs.quoracdn.net/main-qimg-f543dfb3879656e214d40d16a5b6ff17" style="width:810px;height:610px;">    
-</p>
-*Objects viewed are inverted on the retina*
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://qph.fs.quoracdn.net/main-qimg-f543dfb3879656e214d40d16a5b6ff17" alt="Objects viewed are inverted on the retina" width="810" height="610" style="padding-bottom:0.5em;" />*Objects viewed are inverted on the retina*
+</div>
     
 In addition, there were other image preprocessings that I did to the input images. This came easy with keras' `ImageDataGenerator`, where I could easily create unlimited number of datapoints/images from the same input based on certain parameters that is passed in the [data generator][data generator]. One of the more interesting augmentation was the [histogram stretching][histogram stretching] method. This method would allow one to bring out the contrast of the image by plotting the density of contrast on a histogram. Thus, pixels which does not conform to a particular density within the area will be adjusted accordingly. This becomes especially useful for my input images since it is largely grayscale. The contrast would help the models learn those features better. To implement this function together with the ImageDataGenerator, I simply used skimage's exposure library to randomly apply one of three augmentations that could be done: Adaptive equalization, contrast stretching and histogram equalization. This could be passed through a random number generator and as a function in the *preprocessing_function* parameter.
 
-<p align="center">
-  <img src="https://scikit-image.org/docs/0.13.x/_images/sphx_glr_plot_equalize_001.png" style="width:610px;height:610px;">   
-</p>
-*As per skimage's documentation*
-    
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://scikit-image.org/docs/0.13.x/_images/sphx_glr_plot_equalize_001.png" alt="As per skimage's documentation" width="610" height="610" style="padding-bottom:0.5em;" />*As per skimage's documentation*
+</div>
+
 ### Histogram Equalization 
 Histogram Equalization increases contrast in images by detecting the distribution of pixel densities in an image and plotting these pixel densities on a histogram. The distribution of this histogram is then analyzed and if there are ranges of pixel brightnesses that aren’t currently being utilized, the histogram is then “stretched” to cover those ranges, and then is “back projected” onto the image to increase the overall contrast of the image.
 
@@ -58,17 +55,15 @@ Choosing to use Convolutional Neural Networks (CNN) was an easy conclusion for m
 
 Also as a start to building a CNN model, I found it to be safer to follow grounds which were previously explored, and I chose to follow the architecture from EmilWallner's neural network. It seems to work well when training the model on few images (less than 200). Looking at his final version, I've also discovered interesting model architectures that were proven to give some amazing results. For example in the work of [Federico, Diego & Lucas (2017)][Federico, Diego & Lucas (2017)], they incorporated a pre-existing CNN model on top of their own model using inception-resnet-V2.
     
-<p align="center">
-  <img src="https://ai2-s2-public.s3.amazonaws.com/figures/2017-08-08/7aeaeaeb09c605963ff04b63ade03dbeb5555f45/4-Figure1-1.png">    
-</p>
-*CNN + Inception-ResNet-V2 architecture*
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://ai2-s2-public.s3.amazonaws.com/figures/2017-08-08/7aeaeaeb09c605963ff04b63ade03dbeb5555f45/4-Figure1-1.png" alt="CNN + Inception-ResNet-V2 architecture" style="padding-bottom:0.5em;" />*CNN + Inception-ResNet-V2 architecture*
+</div>
     
 Also, there were ideas before the above architecture, as pursued by Satoshi and his team in 2016, where the idea was to concatenate repeat vectors from different levels of feature extraction after passing through several convolutional layers.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/2021rahul/colorization_tensorflow/master/img/Architecture.jpg">    
-</p>
-*Satoshi Iizuka, Edgar Simo-Serra, and Hiroshi Ishikawa architecture (2016)*
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://raw.githubusercontent.com/2021rahul/colorization_tensorflow/master/img/Architecture.jpg" alt="Satoshi Iizuka, Edgar Simo-Serra, and Hiroshi Ishikawa architecture (2016)" style="padding-bottom:0.5em;" />*Satoshi Iizuka, Edgar Simo-Serra, and Hiroshi Ishikawa architecture (2016)*
+</div>
     
 Judging from empirical evidence in their papers that both neural networks seems to work pretty well, I decided to give it a try and incorporate something similar to their works.
 
@@ -121,10 +116,10 @@ model.compile(optimizer='adam',loss=ssim_loss ,metrics=['mse','mean_absolute_err
 Included in this model, I have used Relu activation function for the hidden layers and tanh for the last layer. The use of the tanh is because the output layer which are the ab channels have normalized range between -1 and 1, which coincide with the output of tanh. As for the loss function, I decided to use multi-scale SSIM because the results from my previous trial experiments proved that brown is the most closest color to every other color in the spectrum. The image output at the end using MSE as my loss function would be largely just colored in brown. On the other hand, [MS-SSIM][SSIM] can help measure the the picture's similarity as a whole between channels from the target and the generated output. In the above structure, I used a common shared model to encode the input image. The shape gets halved everytime I use a convolutional layer with stride 2. In this case, batch normalization is spreaded out as following Federico (2017). Halfway through convoluting the image into more abstract features, I will halt the convolution in one path, and proceed to form a dense and fully connected layer for the other (which is named global encoder). In the end, I concatenate both paths back again into a fusion output, which is then passed through upsampling layers to return my original image shape.
 
 The benefits of having both globally encoded features and one that stopped at halfway is that the resulting outpt vector contains both defining features of the image and also the overall quality of the picture. This would help in producing a more realistic image when the output is finally produced at the end of the decoding process.
-    
-<p align="center">
-  <img src="https://scikit-image.org/docs/dev/_images/sphx_glr_plot_ssim_001.png">    
-</p> 
+ 
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://scikit-image.org/docs/dev/_images/sphx_glr_plot_ssim_001.png" alt="SSIM on grayscale; MS-SSIM on 3 channel images" style="padding-bottom:0.5em;" />*SSIM on grayscale; MS-SSIM on 3 channel images*
+</div> 
 
 ## Pivot to other topic? Or to push on and try other methods? 
     
@@ -132,14 +127,13 @@ Unfortunately, after training the above model on 500 epochs, the output did not 
     
 ## Deep Convolutional Generative Adversarial Network (DcGAN) 
 ----
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="https://gluon.mxnet.io/_images/dcgan.png" alt="Deep Convolutional Generative Adversarial Networks" style="padding-bottom:0.5em;" />*Deep Convolutional Generative Adversarial Networks*
+</div> 
 
 GANs have been the latest trend in deep learning, where instead of 1 model trying to produce the best fit prediction, we instead have 2 models working in adversarial terms trying to fine tune each other. Akin to the analogy of police and thieves; The generator, which is the thief, will try to generate images as close to the ground truth as possible. On the other hand the discriminator, with the role of the police, will try to differentiate between the ground truth and the generated ouput from the generator. This adversarial relationship forces both models to get better over time, and  will help to improve color accuracy of the picture that is generated from the generator.    
     
 With the incorporation of both convolutional layers and GANs, we get [DcGANs][DcGANs], which utilises convolutional stride in downsampling the input and transposed convolution for upsampling. This makes DcGANs much simpler model that reduces the complexity of the generator and discriminator without causing bottleneck in image quality.
-    
-<p align="center">
-  <img src="https://gluon.mxnet.io/_images/dcgan.png">    
-</p>    
     
 I was amazed with the performance of DcGANs and GANs within the last few years, where a lot of academic papers on computer vision were written. Two versions of a similar DcGANs (aka Pix2Pix) were available for use in in my case. The original was created by [Phillip Isola][Phillip Isola], but was written with PyTorch, and the latter by [afflinelayer][afflinelayer], written with Tensorflow. I chose to emulate the latter because of the tensorflow compatibility. 
     
@@ -152,6 +146,14 @@ With regards to image preprocessing after switching from CNN to DcGANs, I had to
 ## New loss terms
 
 With this change in type of model, my loss terms are also now different for each model for the generator and discriminator. For the discriminator, the loss term would be `binary crossentropy`. This is because the input in the discriminator uses both the ground truth image and the output from the generator. The total loss term for my discriminator is thus created by adding two different crossentropy loss terms; One loss term comes from comparing a tensor of all 1s with the ground truth image, and the other comes from comparing a tensor of all 0s with the generator's output. This way, the discriminator learns to differentiate between the ground truth better as compared to the generated output.
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../img/gen.png" alt="Generator training diagram" style="padding-bottom:0.5em;" />*Generator training diagram*
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../img/dis.png" alt="Generator training diagram" style="padding-bottom:0.5em;" />*Discriminator training diagram*
+</div> 
 
 The generator's loss term on the other hand is the addition of 3 different individual calculations. Firstly, it will utilize the same binary crossentropy of its generated output with all 1s (so as to learn to trick the discriminator). Secondly, an additional loss term of MSE between the ground truth and the generated output and a lambda multiplier of 100 is added to further regularize the generator. Lastly, incorporating MS-SSIM as previously mentioned above, by comparing the similarity score between the output and the ground truth. For the MS-SSIM loss term, because it measures similarity, and the higher the score (range 0 to 1), the closer the comparison; To effectively add this as a loss term, I took the tf.reduced_mean over the 3 RGB layers and transform it by take 1 - the MS-SSIM score. 
 
