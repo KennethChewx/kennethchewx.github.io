@@ -29,7 +29,7 @@ To make things easier, emilwallner also did a similar project and had a nice int
 So I started off my coding by emulating what was already out there in the internet. Suffice to say, those less than 100 line of neural network was a great starting point for me to build my own neural network. I learnt how to decode and load images into numpy arrays, learnt how that input shapes are important and that batch sizes entering the model had to be optimized to ensure that my computer memory doesn’t run out. Most importantly, I learnt that we could break down my colorization problem into something else, which was to turn it into a conversion from RGB color space to LAB color space. This greatly coincided with my knowledge too that in normal human vision, our optical nerves in our eyes are mostly connected to rods which is used to detect high spatial acuity, while cones which provide the color perception are much lesser in numbers. Furthermore, to closely mimic the human eye, images that hit the retina are actually inverted. So, included within the step of preprocessing, one of the conditions was to randomly flip images upside down, so that the model can also learn better.
 
 <p align="center">
-  <img src="https://qph.fs.quoracdn.net/main-qimg-f543dfb3879656e214d40d16a5b6ff17" style="width:610px;height:610px;">    
+  <img src="https://qph.fs.quoracdn.net/main-qimg-f543dfb3879656e214d40d16a5b6ff17" style="width:810px;height:610px;">    
 </p>
 *Objects viewed are inverted on the retina*
     
@@ -54,7 +54,7 @@ Lastly for preprocessing, to reduce the time taken for the model to learn those 
 ## Convolution Neural Network model 
 ----
 
-Choosing to use Convolutional Neural Networks (CNN) was an easy conclusion for me because I felt that CNN was greatly applicable in this case. Although CNN is one of many forms of neural networks, it has been heavily used in Computer Vision. A typical CNN consists of convolutional layers, pooling layers, fully connected layers, and normalization layers. To understand how CNN work, there are [posts][posts] that can help answer those burning questions. Where a classification problem is concern, pooling and fully connected layers will help to create a decent latent variable space to sieve out features that are more defining towards certain classes of images and thus prediction of a higher probability of those classes. However, for my colorization problem, I would not want to lose any of the image quality and thus, will not be using those layers. Instead, I will include batch normalization and dropout layers, which are regularization layers to prevent overfitting of my CNN model when learning to color the output images. 
+Choosing to use Convolutional Neural Networks (CNN) was an easy conclusion for me because I felt that CNN was greatly applicable in this case. Although CNN is one of many forms of neural networks, it has been heavily used in Computer Vision. A typical CNN consists of convolutional layers, pooling layers, fully connected layers, and normalization layers. To understand how CNN work, there are [posts][posts] that can help answer those burning questions. Where classification problems are concerned, pooling and fully connected layers will help to create a decent latent variable space to sieve out features that are more defining towards certain classes of images and thus prediction of a higher probability of those classes. However, for my colorization problem, I would not want to lose any of the image quality and thus, will not be using those layers. Instead, I will include batch normalization and dropout layers, which are regularization layers to prevent overfitting of my CNN model when learning to color the output images. 
 
 Also as a start to building a CNN model, I found it to be safer to follow grounds which were previously explored, and I chose to follow the architecture from EmilWallner's neural network. It seems to work well when training the model on few images (less than 200). Looking at his final version, I've also discovered interesting model architectures that were proven to give some amazing results. For example in the work of [Federico, Diego & Lucas (2017)][Federico, Diego & Lucas (2017)], they incorporated a pre-existing CNN model on top of their own model using inception-resnet-V2.
     
@@ -118,13 +118,15 @@ model = Model(inputs=encoder_input, outputs=decoder_output)
 model.compile(optimizer='adam',loss=ssim_loss ,metrics=['mse','mean_absolute_error'])
 {% endhighlight %}
     
-Included in this model, I have used Relu activation function for the hidden layers and tanh for the last layer. The use of the tanh is because the output layer which are the ab channels have normalized range between -1 and 1, which coincide with the output of tanh. As for the loss function, I used multi-scale SSIM because as feedbacked from my previous experiments, brown is the most closest color to every oher color in the spectrum. Thus, the output using MSE as loss function turns out to be largely brown. On the other hand, [SSIM][SSIM] helps measure the the picture's similarity as a whole between channels from the target and the generated output. 
+Included in this model, I have used Relu activation function for the hidden layers and tanh for the last layer. The use of the tanh is because the output layer which are the ab channels have normalized range between -1 and 1, which coincide with the output of tanh. As for the loss function, I decided to use multi-scale SSIM because the results from my previous trial experiments proved that brown is the most closest color to every other color in the spectrum. The image output at the end using MSE as my loss function would be largely just colored in brown. On the other hand, [MS-SSIM][SSIM] can help measure the the picture's similarity as a whole between channels from the target and the generated output. In the above structure, I used a common shared model to encode the input image. The shape gets halved everytime I use a convolutional layer with stride 2. In this case, batch normalization is spreaded out as following Federico (2017). Halfway through convoluting the image into more abstract features, I will halt the convolution in one path, and proceed to form a dense and fully connected layer for the other (which is named global encoder). In the end, I concatenate both paths back again into a fusion output, which is then passed through upsampling layers to return my original image shape.
+
+The benefits of having both globally encoded features and one that stopped at halfway is that the resulting outpt vector contains both defining features of the image and also the overall quality of the picture. This would help in producing a more realistic image when the output is finally produced at the end of the decoding process.
     
 <p align="center">
   <img src="https://scikit-image.org/docs/dev/_images/sphx_glr_plot_ssim_001.png">    
 </p> 
 
-## Results 
+## Pivot to other topic? Or to push on and try other methods? 
     
 Unfortunately, after training the above model on 500 epochs, the output did not turn out well with colors like green or blue overtaking the whole picture. In retrospect, even with Colored-Multiscale SSIM, the output turned out to be more grainy than usual. However, this gave me a reason to pursue other forms of models for my coloring problem and thus I encountered DcGANs.
     
@@ -139,19 +141,22 @@ With the incorporation of both convolutional layers and GANs, we get [DcGANs][Dc
   <img src="https://gluon.mxnet.io/_images/dcgan.png">    
 </p>    
     
-Two versions of a similar DcGANs (aka Pix2Pix) were available for use in in my case. The original created by Phillip Isola, but was written with PyTorch, and the latter by afflinelayer, written with Tensorflow. I chose to emulate the latter becauseof the tensorflow compatibility. 
+I was amazed with the performance of DcGANs and GANs within the last few years, where a lot of academic papers on computer vision were written. Two versions of a similar DcGANs (aka Pix2Pix) were available for use in in my case. The original was created by [Phillip Isola][Phillip Isola], but was written with PyTorch, and the latter by [afflinelayer][afflinelayer], written with Tensorflow. I chose to emulate the latter because of the tensorflow compatibility. 
     
-In addition, because of the *unavoidable problem of long training time* for deep learning models, I had to inevitably cut down my sample size from 9.2k images to 2.2k images. Hopefully, I would still be able to reach my goal of submission of my capstone before graduation from the course. Furthermore, because most of the pictures fall into either of 3 categories of Landscape, People and Objects, I chose to also only pick 2.2k (2k in training set and 200 in test) images of people only, so that the model would perform better for predicting colors of grayscale people images. 
+In addition, because of the *unavoidable problem of long training time* for deep learning models, I had to inevitably cut down my sample size from 9.2k images to 2.2k images and also to only use images under the category of people. Hopefully, I would still be able to reach my goal of submission of my capstone before graduation from the course. This is in hope that the model would learn to perform better, especially at predicting colors of grayscale peoeple images.
 
-After looking at the literature for neural architectures, I've picked U-net as the neural network that I will aim towards building. This could be said to be a large improvement to the shared model CNN from previous experiments I have tried out. There are a few advantages to using U-net with my current predicament. Firstly, to understand how this architecture is unique, U-net implement skips between convolution and transpose convolution. This is possible because the shape of the output when encoding/convoluting and the shape of the input when deconvoluting/decoding  are exactly the same. This allows us to concatenate the vectores together and while extracting the feature spaces during convolution, it also preserves the initial pixel acuity.
-Below are the codes that I have fine-tuned for my capstone project.
+After looking at the literature for neural architectures, I've picked U-net as the neural network that I will aim towards building. This could be said to be a large improvement to the shared model CNN from previous experiments I have tried out. U-net builds on the same concept of concatenating vectors from different levels of convolution as similar to my above example from using different models and concatenating their different outputs. It implements skips between convolution and transpose convolution and *only* concatenating vectors of same shape. This symmetry is somewhat appealing (aesthetically), but also helps improve image output in detecting [anomalies][anomalies] and lessen the load on computational power. 
 
-<p align="center">
-  <img src="https://cdn-images-1.medium.com/max/1600/1*J3t2b65ufsl1x6caf6GiBA.png">    
-</p>  
+With regards to image preprocessing after switching from CNN to DcGANs, I had to abandon several of the image augmentation using scikit image library, as during tensorflow implementation of the model, I inevitably chose to turn everything into a tensor (as akin to a numpy array). Skimage would not recognise the image datatype for manipulation. However, that is not to say that all hopes for preprocessing the image is lost. Tensorflow does have their own dedicated library for image augmentation under `tf.image`. Making rotations using `tf.image.random_flip_up_down` and adjusting contrast, hue and saturation were also available as methods for tensor data types. Also, I decided not to complicate the problem of turning the image into a different color space as the range of outputs and color spaces are too difficult to keep track after all the image augmentations.
 
-I trained the model on 200 epochs on Google Colab GPU, with an average runtime of 240s per epoch, and training it for a total of 2 days.
-    
+## New loss terms
+
+With this change in type of model, my loss terms are also now different for each model for the generator and discriminator. For the discriminator, the loss term would be `binary crossentropy`. This is because the input in the discriminator uses both the ground truth image and the output from the generator. The total loss term for my discriminator is thus created by adding two different crossentropy loss terms; One loss term comes from comparing a tensor of all 1s with the ground truth image, and the other comes from comparing a tensor of all 0s with the generator's output. This way, the discriminator learns to differentiate between the ground truth better as compared to the generated output.
+
+The generator's loss term on the other hand is the addition of 3 different individual calculations. Firstly, it will utilize the same binary crossentropy of its generated output with all 1s (so as to learn to trick the discriminator). Secondly, an additional loss term of MSE between the ground truth and the generated output and a lambda multiplier of 100 is added to further regularize the generator. Lastly, incorporating MS-SSIM as previously mentioned above, by comparing the similarity score between the output and the ground truth. For the MS-SSIM loss term, because it measures similarity, and the higher the score (range 0 to 1), the closer the comparison; To effectively add this as a loss term, I took the tf.reduced_mean over the 3 RGB layers and transform it by take 1 - the MS-SSIM score. 
+
+Finally, at the end, to train the model, I also used the Adam optimizer and these loss terms are respectively applied to their own model (generator and discriminator). Quoted below is the full code that I ran on google Colab with GPU.
+
 {% highlight ruby %}
     
 # Convu filter to downsample image
@@ -190,6 +195,7 @@ def upsample(filters, size, apply_dropout=False):
 
     return result
     
+# Create the generator    
 def Generator():
     down_stack = [
         downsample(64, 4, apply_batchnorm=False), # (bs, 128, 128, 64)
@@ -240,7 +246,8 @@ def Generator():
     x = last(x)
 
     return tf.keras.Model(inputs=inputs, outputs=x)
-    
+
+# Create the discriminator
 def Discriminator():
     initializer = tf.random_normal_initializer(0., 0.02)
 
@@ -269,13 +276,67 @@ def Discriminator():
 
     return tf.keras.Model(inputs=[inp, tar], outputs=last)
 
+# Lambda as defined in the pix2pix journal  
+lamb = 100
+loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
+# Discriminator loss terms
+def discriminator_loss(disc_real_output, disc_generated_output):
+    real_loss = loss_object(tf.ones_like(disc_real_output), disc_real_output)
+
+    generated_loss = loss_object(tf.zeros_like(disc_generated_output), disc_generated_output)
+
+    total_disc_loss = real_loss + generated_loss
+
+    return total_disc_loss
+    
+# Generator loss terms
+def generator_loss(disc_generated_output, gen_output, target):
+    gan_loss = loss_object(tf.ones_like(disc_generated_output), disc_generated_output)
+
+    # mean absolute error
+    l1_loss = tf.reduce_mean(tf.abs(target - gen_output))
+    
+    #Include SSIM loss
+    ssim_loss = 1 - tf.reduce_mean(tf.image.ssim_multiscale(gen_output, target, 1))
+    
+    total_gen_loss = gan_loss + (lamb * l1_loss) + ssim_loss
+
+    return total_gen_loss
+
+# Create the optimization to apply gradients to the models
+def train_step(input_image, target):
+    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+        gen_output = generator(input_image, training=True)
+
+        disc_real_output = discriminator([input_image, target], training=True)
+        disc_generated_output = discriminator([input_image, gen_output], training=True)
+
+        gen_loss = generator_loss(disc_generated_output, gen_output, target)
+        disc_loss = discriminator_loss(disc_real_output, disc_generated_output)
+
+        #Manual loss tracker
+        track_g_loss.append(gen_loss)
+        track_d_loss.append(disc_loss)
+        
+    generator_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
+    discriminator_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+
+    generator_optimizer.apply_gradients(zip(generator_gradients, generator.trainable_variables))
+    discriminator_optimizer.apply_gradients(zip(discriminator_gradients,discriminator.trainable_variables))
 {% endhighlight %}
     
-## Results - 2
+## Results
     
 Below are some of the output from the generator.
+
+Below is the loss graphs for the generator and discriminator.
     
-    
+## Conclusion
+
+My initial problem statement to colorize gray images turned out to be a learning journey in deep learning on my own end. I started out by using CNNs as a simple way to process images that does not use heavy computational power, and I ended up with DcGAN models that had several loss terms that help train the model. Overall, I felt that when I was trying to eliminate the weird colors that kept appearing in my output images, I heavily focused on preprocessing the input and trying to make better loss functions that the generator can learn better. In retrospect, although I did not run a large number of epochs, the loss terms did converge quite early on with few hundred epochs, suggesting that the architecture and process seems to be in the right general direction. Afterall, processing color vision in human only uses that little cone optical nerves as compared to rods which define the optic acuity.
+
+Thank you so much for your time reading my blog post. I hope you had also learnt some lessons with regards to deep learning.
     
 [emil]: https://medium.com/@emilwallner/colorize-b-w-photos-with-a-100-line-neural-network-53d9b4449f8d
 [data generator]:   https://keras.io/preprocessing/image/
@@ -286,5 +347,6 @@ Below are some of the output from the generator.
 [Federico, Diego & Lucas (2017)]: https://arxiv.org/abs/1712.03400
 [SSIM]: https://pdfs.semanticscholar.org/3401/02ae4239c8b0e810c04be76b758099f2d3cf.pdf
 [DcGANs]: https://arxiv.org/pdf/1511.06434.pdf
-
-
+[anomalies]: https://arxiv.org/abs/1505.04597
+[Phillip Isola]: https://github.com/phillipi/pix2pix
+[affinelayer]: https://github.com/affinelayer/pix2pix-tensorflow
