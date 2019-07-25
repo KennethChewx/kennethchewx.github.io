@@ -332,7 +332,19 @@ def train_step(input_image, target):
     
 Below are some of the output from the generator.
 
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/01.jpg" alt="Man on the street" width="1010" height="510" style="padding-bottom:0.5em;"/>
+</div> 
+
 Below is the loss graphs for the generator and discriminator.
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/Generator loss.png" alt="Generator loss" width="1010" height="510" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/Discriminator loss.png" alt="Discriminator loss" width="1010" height="510" style="padding-bottom:0.5em;"/>
+</div> 
     
 ## Conclusion
 
