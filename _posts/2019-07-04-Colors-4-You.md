@@ -330,10 +330,38 @@ def train_step(input_image, target):
     
 ## Results
     
-Below are some of the output from the generator.
+Below are some of the output from the generator. They are in the order of input, ground truth and prediction.
 
 <div style="width:image width px; font-size:80%; text-align:center;">
-    <img src="../../../img/01.jpg" alt="Man on the street" width="1010" height="510" style="padding-bottom:0.5em;"/>
+    <img src="../../../img/01.jpg" alt="Man on the street" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/02.jpg" alt="Globe on leaf" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/03.jpg" alt="Flower" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/04.jpg" alt="Summer beach" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/05.jpg" alt="Night campfire" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/06.jpg" alt="NY train station" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/07.jpg" alt="Night skies" width="1010" height="410" style="padding-bottom:0.5em;"/>
+</div> 
+
+<div style="width:image width px; font-size:80%; text-align:center;">
+    <img src="../../../img/08.jpg" alt="Office place" width="1010" height="410" style="padding-bottom:0.5em;"/>
 </div> 
 
 Below is the loss graphs for the generator and discriminator.
